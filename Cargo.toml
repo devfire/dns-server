@@ -1,0 +1,19 @@
+[package]
+name = "codecrafters-dns-server"
+version = "0.1.0"
+authors = ["Igor <igor@devfire.io>"]
+edition = "2021"
+rust-version = "1.80"
+
+[dependencies]
+anyhow = "1.0.68"                                # error handling
+bytes = "1.3.0"                                  # helps manage buffers
+clap = { version = "4.5.40", features = ["derive"] }
+futures = "0.3"                                  # async stream utilities
+hickory-resolver = "0.25.2"
+nom = "8.0.0"
+thiserror = "1.0.38"                             # error handling
+tokio = { version = "1.45.1", features = ["full"] }
+tokio-util = { version = "0.7.15", features = ["codec"] }
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
