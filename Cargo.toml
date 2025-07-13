@@ -1,5 +1,5 @@
 [package]
-name = "codecrafters-dns-server"
+name = "dns-server"
 version = "0.1.0"
 authors = ["Igor <igor@devfire.io>"]
 edition = "2021"

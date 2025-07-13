@@ -1,5 +1,5 @@
 use crate::protocol::{DnsPacket, DnsPacketHeader, DnsQuestion, DnsResourceRecord};
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use std::net::{IpAddr, Ipv6Addr};
 
 // DNS Record Type Constants
 pub const DNS_TYPE_A: u16 = 1; // IPv4 address

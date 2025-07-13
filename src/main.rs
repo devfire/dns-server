@@ -8,7 +8,7 @@ mod response_builder;
 mod actors;
 mod handlers;
 
-use crate::actors::messages::SetActorMessage;
+use crate::handlers::query_handler::QueryActorHandle;
 
 use std::net::{Ipv4Addr, SocketAddr};
 
@@ -63,6 +63,10 @@ async fn main() -> anyhow::Result<()> {
     let resolver =
         Resolver::builder_with_config(resolver_config, TokioConnectionProvider::default()).build();
 
+    // Create a new actor handle for the query actor.
+    let query_actor_handle = QueryActorHandle::new(resolver.clone());
+
+    // Create a new DNS codec instance.
     let mut codec = DnsCodec::new();
     let mut buf = [0; 1024];
 
@@ -153,20 +157,25 @@ async fn main() -> anyhow::Result<()> {
                 let mut response_builder_chain = response_builder_fluent;
 
                 for question in packet.questions.iter() {
-                    match resolver.lookup_ip(&question.name).await {
-                        Ok(response) => {
-                            for ip in response.iter() {
-                                info!("{} - {}", question.name, ip);
+                    // `resolve` now returns an Option<Vec<IpAddr>>
+                    if let Some(ip_addrs) = query_actor_handle.resolve(question.name.clone()).await
+                    {
+                        if ip_addrs.is_empty() {
+                            error!("Could not resolve {}: No IPs found", &question.name);
+                        } else {
+                            // Iterate over all returned IP addresses and add them to the response
+                            for ip_addr in ip_addrs {
+                                info!("Resolved {} -> {}", &question.name, ip_addr);
                                 response_builder_chain = response_builder_chain.with_an_answer(
                                     &question.name,
-                                    ip, // Use IpAddr directly
+                                    ip_addr, // This is already an IpAddr
                                     60,
                                 );
                             }
                         }
-                        Err(e) => {
-                            error!("Lookup failed: {}", e);
-                        }
+                    } else {
+                        error!("Could not resolve {}: Lookup failed", &question.name);
+                        // Optionally, set the RCODE to NXDOMAIN or similar
                     }
                 }
 

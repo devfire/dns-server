@@ -1,9 +1,6 @@
-use tokio::sync::broadcast;
-use tokio::sync::mpsc;
-use tokio::sync::oneshot;
+use std::net::IpAddr;
 
-use crate::handlers::set_id_handler::SetCommandActorHandle;
-use crate::protocol::DnsQuestion;
+use tokio::sync::oneshot;
 
 /// The ActorMessage enum defines the kind of messages we can send to the actor.
 /// By using an enum, we can have many different message types,
@@ -11,25 +8,10 @@ use crate::protocol::DnsQuestion;
 /// We return a value to the sender by using an oneshot channel,
 /// which is a message passing channel that allows sending exactly one message.
 #[derive(Debug)]
-pub enum SetActorMessage {
-    // the idea here is that values are stored in a String->Value HashMap.
-    // So, to get a Value back the client must supply a String key.
-    GetValue {
-        key: u16,
-        respond_to: oneshot::Sender<Option<DnsQuestion>>,
+pub enum QueryActorMessage {
+    /// Resolve a DNS name to an IPv4 address.
+    Resolve {
+        name: String,
+        respond_to: oneshot::Sender<Option<Vec<IpAddr>>>,
     },
-    SetValue {
-        // SetCommandParameters is defined in protocol.rs
-        input: SetCommandParameter,
-    },
-    DeleteValue {
-        // Deletes the value at a given interval
-        value: u16,
-    },
-}
-
-#[derive(Clone, Debug)]
-pub struct SetCommandParameter {
-    pub key: u16,
-    pub value: DnsQuestion,
 }
